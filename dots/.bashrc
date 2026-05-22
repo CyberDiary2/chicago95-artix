@@ -1,5 +1,5 @@
 # ── env ───────────────────────────────────────────────────────────────────────
-export PATH="$PATH:$HOME/go/bin:$HOME/.local/bin"
+export PATH="$PATH:$HOME/go/bin:$HOME/.local/bin:$HOME/.venv/pentest/bin"
 export GOPATH="$HOME/go"
 export EDITOR=nvim
 export PAGER=less
