@@ -2,7 +2,7 @@
 # chicago95-artix -- automated rice + pentest setup for Artix Linux XFCE
 # usage: bash install.sh
 
-set -e
+set -eo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/dots" && pwd)"
 TOOLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -10,6 +10,18 @@ TOOLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 log()  { printf '\033[1;32m[+]\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[!]\033[0m %s\n' "$*"; }
 die()  { printf '\033[1;31m[-]\033[0m %s\n' "$*"; exit 1; }
+
+pkg() {
+    for p in "$@"; do
+        sudo pacman -S --needed --noconfirm "$p" 2>/dev/null || warn "package not found, skipping: $p"
+    done
+}
+
+aur() {
+    for p in "$@"; do
+        yay -S --needed --noconfirm "$p" 2>/dev/null || warn "aur package not found, skipping: $p"
+    done
+}
 
 [[ $EUID -eq 0 ]] && die "do not run as root"
 
@@ -43,9 +55,7 @@ setup_yay() {
 # ── chicago95 theme ───────────────────────────────────────────────────────────
 setup_chicago95() {
     log "installing chicago95 theme"
-    yay -S --needed --noconfirm chicago95-gtk-theme-git chicago95-icon-theme-git
-    # fonts: chicago95 ships its own -- also grab ms core fonts for accuracy
-    yay -S --needed --noconfirm ttf-ms-fonts
+    aur chicago95-gtk-theme-git chicago95-icon-theme-git ttf-ms-fonts
 
     log "applying xfce theme settings"
     xfconf-query -c xsettings -p /Net/ThemeName          -s "Chicago95" --create -t string
@@ -114,14 +124,13 @@ deploy_dots() {
 # ── base tools ────────────────────────────────────────────────────────────────
 install_base() {
     log "installing base tools"
-    sudo pacman -S --needed --noconfirm \
-        git curl wget jq tmux neovim \
+    pkg git curl wget jq tmux neovim \
         python python-pip python-pipx \
-        go ruby rubygems \
+        go ruby \
         net-tools iproute2 whois bind \
-        nmap tcpdump wireshark-qt tshark \
-        proxychains-ng socat netcat \
-        openssl libssl-dev \
+        nmap tcpdump wireshark-qt wireshark-cli \
+        proxychains-ng socat openbsd-netcat \
+        openssl \
         unzip p7zip \
         ripgrep fd bat \
         xclip xdotool
@@ -131,9 +140,7 @@ install_base() {
 install_pentest() {
     log "installing pentest tools from blackarch + pacman"
 
-    # web
-    sudo pacman -S --needed --noconfirm \
-        sqlmap nikto whatweb wafw00f \
+    pkg sqlmap nikto whatweb wafw00f \
         hydra john hashcat \
         metasploit exploitdb \
         aircrack-ng \
@@ -142,9 +149,7 @@ install_pentest() {
         wfuzz \
         seclists
 
-    # AUR tools
-    yay -S --needed --noconfirm \
-        burpsuite \
+    aur burpsuite \
         pwncat-cs \
         evil-winrm \
         wordlistctl \
@@ -275,8 +280,7 @@ setup_grub() {
 setup_plymouth() {
     log "installing plymouth and chicago95 boot splash"
 
-    # artix plymouth package
-    sudo pacman -S --needed --noconfirm plymouth
+    pkg plymouth
 
     # install theme files
     sudo mkdir -p /usr/share/plymouth/themes/chicago95
@@ -304,7 +308,7 @@ setup_plymouth() {
 setup_lightdm() {
     log "configuring lightdm with chicago95 greeter"
 
-    sudo pacman -S --needed --noconfirm lightdm lightdm-gtk-greeter
+    pkg lightdm lightdm-gtk-greeter
 
     sudo cp "$TOOLS_DIR/lightdm/lightdm-gtk-greeter.conf" \
             /etc/lightdm/lightdm-gtk-greeter.conf
