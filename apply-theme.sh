@@ -11,7 +11,7 @@ die()  { printf '\033[1;31m[-]\033[0m %s\n' "$*"; exit 1; }
 [[ -z "$DISPLAY" && -z "$WAYLAND_DISPLAY" ]] \
     && die "no display detected -- run this from inside an XFCE session"
 
-command -v xfconf-query &>/dev/null \\
+command -v xfconf-query &>/dev/null \
     || die "xfconf-query not found -- install xfce4 first"
 
 # ── gtk / xfwm4 / cursor ──────────────────────────────────────────────────────
@@ -40,24 +40,26 @@ for prop in $(xfconf-query -c xfce4-desktop -l 2>/dev/null | grep 'rgba1$'); do
 done
 
 # ── panel: win95 taskbar style ────────────────────────────────────────────────
-# only adjust size/position/color -- do NOT reset /panels or plugin list
+# ensure panel is running before writing properties
+xfce4-panel &>/dev/null &
+sleep 2
+
 log "styling panel"
 panel_id=$(xfconf-query -c xfce4-panel -p /panels 2>/dev/null | grep -m1 '[0-9]' || echo 1)
 base="/panels/panel-${panel_id}"
 
-xfconf-query -c xfce4-panel -p "${base}/size"             -s 28 --create -t int
-xfconf-query -c xfce4-panel -p "${base}/position"         -s "p=8;x=0;y=0" --create -t string
-xfconf-query -c xfce4-panel -p "${base}/position-locked"  -s true --create -t bool
-xfconf-query -c xfce4-panel -p "${base}/length"           -s 100 --create -t int
-xfconf-query -c xfce4-panel -p "${base}/length-adjust"    -s true --create -t bool
-xfconf-query -c xfce4-panel -p "${base}/background-style" -s 1 --create -t int
-xfconf-query -c xfce4-panel -p "${base}/background-color" \
-    -s "#c0c0c0" --create -t string
+xfconf-query -c xfce4-panel -p "${base}/size"             -s 28 --create -t int             2>/dev/null || warn "panel: size not set"
+xfconf-query -c xfce4-panel -p "${base}/position"         -s "p=8;x=0;y=0" --create -t string 2>/dev/null || warn "panel: position not set"
+xfconf-query -c xfce4-panel -p "${base}/position-locked"  -s true --create -t bool           2>/dev/null || warn "panel: position-locked not set"
+xfconf-query -c xfce4-panel -p "${base}/length"           -s 100 --create -t int             2>/dev/null || warn "panel: length not set"
+xfconf-query -c xfce4-panel -p "${base}/length-adjust"    -s true --create -t bool           2>/dev/null || warn "panel: length-adjust not set"
+xfconf-query -c xfce4-panel -p "${base}/background-style" -s 1 --create -t int               2>/dev/null || warn "panel: background-style not set"
+xfconf-query -c xfce4-panel -p "${base}/background-color" -s "#c0c0c0" --create -t string    2>/dev/null || warn "panel: background-color not set"
 
 # ── restart panel and wm to pick up changes ───────────────────────────────────
 log "restarting xfce components"
-xfwm4 --replace &
+xfwm4 --replace &>/dev/null &
 sleep 1
 xfce4-panel --restart 2>/dev/null || true
 
-log "done -- chicago95 applied. you may need to log out and back in for icons/cursor to fully reload."
+log "done -- chicago95 applied. log out and back in for icons/cursor to fully reload."
