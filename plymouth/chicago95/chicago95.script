@@ -1,0 +1,94 @@
+// chicago95 plymouth theme
+// mimics windows 95 boot screen: black bg, centered logo text, progress bar
+
+screen_width  = Window.GetWidth();
+screen_height = Window.GetHeight();
+
+// ── colors ────────────────────────────────────────────────────────────────────
+black   = Color(0.00, 0.00, 0.00, 1.0);
+grey    = Color(0.75, 0.75, 0.75, 1.0);
+blue    = Color(0.00, 0.00, 0.50, 1.0);
+white   = Color(1.00, 1.00, 1.00, 1.0);
+win_bar = Color(0.00, 0.00, 0.63, 1.0);  // classic win95 progress blue
+
+// ── background ────────────────────────────────────────────────────────────────
+bg = Rectangle();
+bg.SetColor(black);
+bg.SetX(0);
+bg.SetY(0);
+bg.SetWidth(screen_width);
+bg.SetHeight(screen_height);
+
+// ── logo text ─────────────────────────────────────────────────────────────────
+logo = Image.Text("Artix Linux", 1.0, 1.0, 1.0);
+logo_sprite = Sprite(logo);
+logo_sprite.SetX(screen_width  / 2 - logo.GetWidth()  / 2);
+logo_sprite.SetY(screen_height / 2 - logo.GetHeight() - 40);
+
+tagline = Image.Text("Starting...", 0.75, 0.75, 0.75);
+tag_sprite = Sprite(tagline);
+tag_sprite.SetX(screen_width  / 2 - tagline.GetWidth()  / 2);
+tag_sprite.SetY(screen_height / 2 - tagline.GetHeight() - 10);
+
+// ── progress bar (win95 style: rectangular blocks) ────────────────────────────
+bar_w   = 200;
+bar_h   = 14;
+bar_x   = screen_width  / 2 - bar_w / 2;
+bar_y   = screen_height / 2 + 20;
+blocks  = 10;
+gap     = 2;
+block_w = (bar_w - (blocks - 1) * gap) / blocks;
+
+bar_bg = Rectangle();
+bar_bg.SetColor(Color(0.10, 0.10, 0.10, 1.0));
+bar_bg.SetX(bar_x - 2);
+bar_bg.SetY(bar_y - 2);
+bar_bg.SetWidth(bar_w + 4);
+bar_bg.SetHeight(bar_h + 4);
+
+progress_sprites = [];
+for (i = 0; i < blocks; i++) {
+    r = Rectangle();
+    r.SetColor(Color(0.10, 0.10, 0.10, 1.0));
+    r.SetX(bar_x + i * (block_w + gap));
+    r.SetY(bar_y);
+    r.SetWidth(block_w);
+    r.SetHeight(bar_h);
+    progress_sprites[i] = r;
+}
+
+// ── password prompt (for LUKS) ────────────────────────────────────────────────
+password_dialogue = null;
+
+fun DisplayPasswordCallback(prompt, bullets) {
+    if (password_dialogue == null) {
+        lbl = Image.Text(prompt, 0.75, 0.75, 0.75);
+        password_dialogue = Sprite(lbl);
+        password_dialogue.SetX(screen_width  / 2 - lbl.GetWidth()  / 2);
+        password_dialogue.SetY(screen_height / 2 + 60);
+    }
+
+    dots = "";
+    for (i = 0; i < bullets; i++) { dots += "*"; }
+    dot_img = Image.Text(dots, 1.0, 1.0, 1.0);
+    dot_spr = Sprite(dot_img);
+    dot_spr.SetX(screen_width  / 2 - dot_img.GetWidth()  / 2);
+    dot_spr.SetY(screen_height / 2 + 85);
+}
+Plymouth.SetDisplayPasswordFunction(DisplayPasswordCallback);
+
+// ── tick (animate progress blocks) ───────────────────────────────────────────
+tick = 0;
+
+fun RefreshCallback() {
+    tick++;
+    active = (tick / 8) % (blocks + 1);
+    for (i = 0; i < blocks; i++) {
+        if (i < active)
+            progress_sprites[i].SetColor(win_bar);
+        else
+            progress_sprites[i].SetColor(Color(0.10, 0.10, 0.10, 1.0));
+    }
+    if (active > blocks) tick = 0;
+}
+Plymouth.SetRefreshFunction(RefreshCallback);

@@ -1,0 +1,55 @@
+# chicago95 grub2 theme
+# classic win95 boot selector: grey background, blue selection bar
+
+title-text: ""
+desktop-color: "#008080"
+desktop-image: ""
+
+# boot menu box
++ boot_menu {
+    left   = 15%
+    top    = 20%
+    width  = 70%
+    height = 60%
+    item_font       = "Sans Regular 10"
+    item_color      = "#c0c0c0"
+    selected_item_font  = "Sans Bold 10"
+    selected_item_color = "#ffffff"
+    item_height     = 24
+    item_padding    = 4
+    item_spacing    = 2
+    selected_item_pixmap_style = "sel_*"
+    scrollbar       = true
+    scrollbar_width = 14
+    scrollbar_thumb = "slider_*"
+}
+
+# title bar (classic win95 blue title bar)
++ label {
+    top    = 8%
+    left   = 15%
+    width  = 70%
+    height = 28
+    text   = "Please select the operating system to start:"
+    font   = "Sans Regular 10"
+    color  = "#c0c0c0"
+    align  = "left"
+}
+
+# timeout bar
++ progress_bar {
+    id         = "__timeout__"
+    left       = 15%
+    top        = 84%
+    width      = 70%
+    height     = 20
+    show_text  = true
+    text       = "Starting in %d seconds"
+    font       = "Sans Regular 9"
+    text_color = "#c0c0c0"
+    bar_style  = "progress_bar_*"
+    highlight_style = "progress_highlight_*"
+    bg_color   = "#000080"
+    fg_color   = "#c0c0c0"
+    border_color = "#ffffff"
+}

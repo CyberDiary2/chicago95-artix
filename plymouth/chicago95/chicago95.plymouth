@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Chicago95
+Description=Windows 95 style boot screen for Artix Linux
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/chicago95
+ScriptFile=/usr/share/plymouth/themes/chicago95/chicago95.script
