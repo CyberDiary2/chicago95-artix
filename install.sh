@@ -177,19 +177,24 @@ install_python_tools() {
     python3 -m venv "$VENV"
     local pip="$VENV/bin/pip"
 
-    log "installing python libraries into venv"
-    "$pip" install -q --upgrade pip
-    "$pip" install -q \
-        requests \
-        httpx \
-        beautifulsoup4 \
-        lxml \
-        censys \
-        shodan \
-        dnspython \
-        paramiko \
-        impacket \
-        pwntools
+    log "installing python libraries into venv (one at a time)"
+    "$pip" install --upgrade pip
+
+    pip_pkg() {
+        log "  pip: $1"
+        "$pip" install --timeout 60 "$1" || warn "  pip: $1 failed, skipping"
+    }
+
+    pip_pkg requests
+    pip_pkg httpx
+    pip_pkg beautifulsoup4
+    pip_pkg lxml
+    pip_pkg censys
+    pip_pkg shodan
+    pip_pkg dnspython
+    pip_pkg paramiko
+    pip_pkg impacket
+    pip_pkg pwntools
 
     log "installing pipx cli tools"
     pipx install trufflehog 2>/dev/null || warn "trufflehog failed, skipping"
