@@ -11,8 +11,8 @@ die()  { printf '\033[1;31m[-]\033[0m %s\n' "$*"; exit 1; }
 [[ -z "$DISPLAY" && -z "$WAYLAND_DISPLAY" ]] \
     && die "no display detected -- run this from inside an XFCE session"
 
-command -v xfconf-query &>/dev/null \
-    && die "xfconf-query not found -- install xfce4 first"
+command -v xfconf-query &>/dev/null \\
+    || die "xfconf-query not found -- install xfce4 first"
 
 # ── gtk / xfwm4 / cursor ──────────────────────────────────────────────────────
 log "applying gtk and window manager theme"
